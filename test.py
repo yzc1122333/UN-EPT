@@ -7,21 +7,18 @@ from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import get_dist_info, init_dist, load_checkpoint
 from mmcv.utils import DictAction
 
-import sys
-
 from mmseg.apis import multi_gpu_test, single_gpu_test
-
-from mmseg_modified.datasets import build_dataset
-from mmseg.datasets import build_dataloader
+from mmseg.datasets import build_dataloader, build_dataset
 from builder import build_segmentor
 from models import *
+
 
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='test/eval a model')
-    parser.add_argument('--config', default='configs/UNEPT_160k_ade20k.py', type=str, help='test config file path')
-    parser.add_argument('--checkpoint', default='/home/ubuntu/work/EPT/work_dirs/deit_segfix_160k_ade20k/iter_120000.pth', type=str, help='checkpoint file')
+    parser.add_argument('--config', help='test config file path')
+    parser.add_argument('--checkpoint', help='checkpoint file')
     parser.add_argument('--aug-test', action='store_true', help='Use Flip and Multi scale aug')
     parser.add_argument('--out', help='output result file in pickle format')
     parser.add_argument('--format-only', action='store_true', help='Format the output results without perform evaluation. It is'
@@ -71,7 +68,6 @@ def main():
             0.5, 0.75, 1.0, 1.25, 1.5, 1.75
         ]
         cfg.data.test.pipeline[1].flip = True
-    # cfg.model.pretrained = None
     cfg.data.test.test_mode = True
 
 
@@ -100,22 +96,7 @@ def main():
     state_dict = checkpoint['state_dict']
     
 
-    # origin
-    # for k in list(state_dict.keys()):
-    #     if 'backbone.feature_extractor' in k:
-    #         # remove prefix
-    #         tmp_str = 'backbone.' + k[len('module.backbone.feature_extractor.'):]
-    #         state_dict[tmp_str] = state_dict[k]
-    #     else:
-    #         state_dict[k[len("module."):]] = state_dict[k]
-
-    #     del state_dict[k]
-
     model.load_state_dict(state_dict)
-
-    # checkpoint = load_checkpoint(model, args.checkpoint, map_location='cpu')
-    # model.CLASSES = checkpoint['meta']['CLASSES']
-    # model.PALETTE = checkpoint['meta']['PALETTE']
     
     model.CLASSES = dataset.CLASSES
     model.PALETTE = dataset.PALETTE

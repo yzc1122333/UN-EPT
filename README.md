@@ -1,17 +1,44 @@
-## Dependencies
-* PyTorch 1.5+ and torchvision 0.6+
-* Python 3.7
+# A Unified Efficient Pyramid Transformer for Semantic Segmentation
+
+## Installation
+
+* Linux, CUDA>=10.0, GCC>=5.4
+* Python>=3.7
+* Create a conda environment:
+
+```bash
+    conda create -n unept python=3.7 pip
+```
+
+Then, activate the environment:
+```bash
+    conda activate unept
+```
+* PyTorch>=1.5.1, torchvision>=0.6.1 (following instructions [here](https://pytorch.org/))
+
+For example:
+```
+conda install pytorch==1.5.1 torchvision==0.6.1 cudatoolkit=10.2 -c pytorch
+```
+
 * Install [MMCV](https://mmcv.readthedocs.io/en/latest/) 
 
 ```
 pip install mmcv
 ```
+
 * Install [MMSegmentation](https://github.com/open-mmlab/mmsegmentation/blob/master/docs/install.md) :
 ```
 pip install mmsegmentation # install the latest release
 ```
 
-* Compiling CUDA operators of [Deformable-DETR](https://github.com/fundamentalvision/Deformable-DETR)
+* Install [timm](https://pypi.org/project/timm/)
+
+```
+pip install timm
+```
+
+* Install [Deformable DETR](https://github.com/fundamentalvision/Deformable-DETR) and compile the CUDA operators
 
 
 ## Data 
@@ -23,19 +50,14 @@ path/to/ADEChallengeData2016/
   images/
     training/
     validation/
-
   annotations/ 
-    training/
-    validation/
-
-  dt_offset/
     training/
     validation/
 ```
 
 ## Usage 
 ### Train on ADE20k
-**1. The default is for multi-gpu, DistributedDataParallel training due to SyncBN.**
+**The default is for multi-gpu, DistributedDataParallel training due to SyncBN.**
 
 ```
 python -m torch.distributed.launch --nproc_per_node=8 \ # specify gpu number
@@ -44,21 +66,16 @@ train.py  --launcher pytorch \
 --config_file /path/to/config_file 
 ```
 
-<!-- **A runnable command (multi-gpu train):**
-- specify the ```data_root``` in the config ```configs/resV1c50_ss_deform_tr2+2_480x480_adamW_step_640k_ade20k.py```;
-- log dir will be created in ```./work_dirs```.
+**A runnable command (multi-gpu train):**
+- specify the ```data_root``` in the config ```configs/res50_ept_ade20k.py```;
+- log dir will be created in ```./work_dirs```;
+- download the [DeiT pretrained model](https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_384-d0272ac0.pth) and specify the ```pretrained``` path in ```configs/deit_ept_ade20k.py```.
 
 ```
 python -m torch.distributed.launch --nproc_per_node=8 --master_port=29500 train.py  --launcher pytorch \
---config_file configs/resV1c50_ss_deform_tr2+2_480x480_adamW_step_640k_ade20k.py 
-``` -->
-
-<!-- **2. For single-gpu, change the type of 'norm_cfg' to 'BN' in the config.**
-
+--config_file configs/res50_ept_ade20k.py 
 ```
-python train.py --config_file /path/to/config_file \
---work_dir /path/to/log_dir \
-``` -->
+
 
 
 
@@ -90,11 +107,10 @@ python evaluate.py --eval \
 --data_root /path/to/ADEChallengeData2016
 ``` -->
 
-1. Use slide mode, the crop size is the same as the model input size (now 480 x 480). 
-
 ```
 # single-gpu testing
 python test.py --checkpoint /path/to/checkpoint \
+--config_file /path/to/config_file \
 --eval mIoU \
 [--out ${RESULT_FILE}] [--show] \
 --aug-test \ # for multi-scale flip aug
@@ -102,6 +118,8 @@ python test.py --checkpoint /path/to/checkpoint \
 # multi-gpu testing (4 gpus, 1 sample per gpu)
 python -m torch.distributed.launch --nproc_per_node=4 --master_port=29500 \
 test.py  --launcher pytorch --eval mIoU \
+--config_file /path/to/config_file \
+--checkpoint /path/to/checkpoint \
 --aug-test \ # for multi-scale flip aug
 ```
 
@@ -118,7 +136,7 @@ pip install mmcv==1.1.0
 pip install mmsegmentation==0.5.0
 ``` -->
 
-### Evaluate on Cityscapes
+<!-- ### Evaluate on Cityscapes
 1. on validation set.
 
 ```
@@ -142,4 +160,4 @@ test.py  --launcher pytorch  \
 
 
 
- 
+  -->

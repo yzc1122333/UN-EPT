@@ -1,6 +1,3 @@
-# ------------------------------------------------------------------------------------------------
-# adapted from https://github.com/open-mmlab/mmsegmentation
-# ------------------------------------------------------------------------------------------------
 import argparse
 import copy
 import os
@@ -15,16 +12,16 @@ from mmcv.utils import Config, DictAction
 from mmseg import __version__
 
 
-from mmseg_modified.apis import set_random_seed, train_segmentor
-from mmseg_modified.datasets import build_dataset
-from mmseg_modified.utils import collect_env, get_root_logger
+from mmseg.apis import set_random_seed, train_segmentor
+from mmseg.datasets import build_dataset
+from mmseg.utils import collect_env, get_root_logger
 from models import *
 from builder import build_segmentor
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train SEGTR')
-    parser.add_argument('--config', default='configs/UNEPT_160k_ade20k.py', type=str, help='train config file path')
+    parser = argparse.ArgumentParser(description='Train EPT')
+    parser.add_argument('--config', help='train config file path')
     parser.add_argument('--work_dir', help='the dir to save logs and models')
     parser.add_argument('--load-from', help='the checkpoint file to load weights from')
     parser.add_argument('--resume-from', help='the checkpoint file to resume from')
@@ -62,8 +59,7 @@ def main():
         cfg.work_dir = args.work_dir
     elif cfg.get('work_dir', None) is None:
         # use config filename as default work_dir if cfg.work_dir is None
-        cfg.work_dir = osp.join('./work_dirs',
-                                osp.splitext(osp.basename(args.config))[0])
+        cfg.work_dir = osp.join('./work_dirs', osp.splitext(osp.basename(args.config))[0])
     if args.load_from is not None:
         cfg.load_from = args.load_from
     if args.resume_from is not None:
@@ -115,11 +111,10 @@ def main():
 
     model = build_segmentor(
         cfg.model, train_cfg=cfg.train_cfg, test_cfg=cfg.test_cfg)
-    # import ipdb; ipdb.set_trace()
     logger.info(model)
 
     datasets = [build_dataset(cfg.data.train)]
-    # import ipdb; ipdb.set_trace()
+    
     if len(cfg.workflow) == 2:
         val_dataset = copy.deepcopy(cfg.data.val)
         val_dataset.pipeline = cfg.data.train.pipeline

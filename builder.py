@@ -1,6 +1,7 @@
 from mmcv.utils import Registry, build_from_cfg
 from torch import nn
 
+BACKBONES = Registry('backbone')
 NECKS = Registry('neck')
 HEADS = Registry('head')
 LOSSES = Registry('loss')
